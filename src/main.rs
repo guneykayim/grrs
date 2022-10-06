@@ -13,20 +13,20 @@ struct Cli {
     path: std::path::PathBuf,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Cli::parse();
 
     let file = File::open(&args.path).expect("Could not read file");
     let reader = BufReader::new(file);
 
     for line in reader.lines() {
-        match line {
-            Ok(str) => {
-                if str.contains(&args.pattern) {
-                    println!("{}", str);
-                }
-            },
-            Err(e) => println!("Error reading file: {}", e), 
+        let line = match line {
+            Ok(str) => { str },
+            Err(e) => { return Err(e.into()); } 
+        };
+        if line.contains(&args.pattern) {
+            println!("{}", line);
         }
     }
+    Ok(())
 }
